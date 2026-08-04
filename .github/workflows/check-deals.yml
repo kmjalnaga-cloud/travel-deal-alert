@@ -2,7 +2,7 @@ name: Check Travel Deals
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 0,4,10 * * *"
   workflow_dispatch: {}
 
 permissions:
