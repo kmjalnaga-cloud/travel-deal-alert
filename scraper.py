@@ -18,11 +18,7 @@ def load_json(path: Path, default):
     return default
 
 
-def matches_keywords(badge: str, keywords: list[str]) -> bool:
-    return any(kw in badge for kw in keywords)
-
-
-def check_place(place: dict, keywords: list[str], state: dict) -> list[str]:
+def check_place(place: dict, state: dict) -> list[str]:
     """Returns a list of alert messages for this place."""
     messages = []
 
@@ -46,7 +42,7 @@ def check_place(place: dict, keywords: list[str], state: dict) -> list[str]:
         if not found:
             continue
 
-        matched = sorted({b for b in badges if matches_keywords(b, keywords)})
+        matched = sorted(set(badges))
         previous = set(state.get(state_key, []))
         new_badges = [b for b in matched if b not in previous]
 
@@ -64,12 +60,12 @@ def check_place(place: dict, keywords: list[str], state: dict) -> list[str]:
 
 
 def main():
-    config = load_json(CONFIG_PATH, {"places": [], "keywords": ["특가", "할인"]})
+    config = load_json(CONFIG_PATH, {"places": []})
     state = load_json(STATE_PATH, {})
 
     all_messages = []
     for place in config["places"]:
-        all_messages.extend(check_place(place, config["keywords"], state))
+        all_messages.extend(check_place(place, state))
 
     STATE_PATH.write_text(
         json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8"
