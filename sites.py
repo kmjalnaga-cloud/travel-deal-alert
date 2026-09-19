@@ -18,6 +18,11 @@ NEXT_DATA_RE = re.compile(
 )
 
 
+SOLD_OUT_RE = re.compile(
+    r'\\"rate\\":\\"([\d,]+)\\",\\"nights\\":[^,]*,\\"averageRate\\":[^,]*,\\"soldOut\\":(true|false)'
+)
+
+
 def today_tomorrow_kst():
     today = datetime.now(KST).date()
     return today.isoformat(), (today + timedelta(days=1)).isoformat()
@@ -78,15 +83,19 @@ def fetch_yanolja(name: str, place_id: int, check_in=None, check_out=None):
     if str(place_id) not in html:
         return False, None, []
 
+    # Sold-out rooms keep showing their price, so a price alone doesn't mean
+    # bookable. Each rate plan is one chunk holding its price, soldOut flag
+    # and badges; only chunks with soldOut=false count.
     badges = []
-    for key in ("benefitBadges", "badgeList", "rateBadges"):
-        for m in re.finditer(rf'\\"{key}\\":\[(.*?)\]', html):
-            for label_m in re.finditer(r'\\"label\\":\\"([^"\\]+)\\"', m.group(1)):
-                badges.append(label_m.group(1))
+    prices = []
+    for plan in html.split('\\"ratePlanId\\":')[1:]:
+        sold_m = SOLD_OUT_RE.search(plan)
+        if not sold_m or sold_m.group(2) == "true":
+            continue
+        prices.append(int(sold_m.group(1).replace(",", "")))
+        for key in ("benefitBadges", "badgeList", "rateBadges"):
+            for m in re.finditer(rf'\\"{key}\\":\[(.*?)\]', plan):
+                for label_m in re.finditer(r'\\"label\\":\\"([^"\\]+)\\"', m.group(1)):
+                    badges.append(label_m.group(1))
 
-    price = None
-    rate_m = re.search(r'\\"rate\\":\\"([\d,]+)\\"', html)
-    if rate_m:
-        price = int(rate_m.group(1).replace(",", ""))
-
-    return True, price, badges
+    return True, (min(prices) if prices else None), badges
