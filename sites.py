@@ -23,9 +23,13 @@ def today_tomorrow_kst():
     return today.isoformat(), (today + timedelta(days=1)).isoformat()
 
 
-def fetch_yeogi(name: str, place_id: int, dong_code: str):
-    """Returns (found: bool, price: int|None, badges: list[str])."""
-    check_in, check_out = today_tomorrow_kst()
+def fetch_yeogi(name: str, place_id: int, dong_code: str, check_in=None, check_out=None):
+    """Returns (found: bool, price: int|None, badges: list[str]).
+
+    price is None when the dates are not bookable (not open yet or sold out).
+    """
+    if not check_in or not check_out:
+        check_in, check_out = today_tomorrow_kst()
     url = (
         "https://www.yeogi.com/domestic-accommodations"
         f"?keyword={quote(name)}&autoKeyword={quote(name)}"
@@ -58,9 +62,15 @@ def fetch_yeogi(name: str, place_id: int, dong_code: str):
     return False, None, []
 
 
-def fetch_yanolja(name: str, place_id: int):
-    """Returns (found: bool, price: int|None, badges: list[str])."""
+def fetch_yanolja(name: str, place_id: int, check_in=None, check_out=None):
+    """Returns (found: bool, price: int|None, badges: list[str]).
+
+    Without dates the site defaults to tonight. price is None when the dates
+    are not bookable (not open yet or sold out).
+    """
     url = f"https://nol.yanolja.com/stay/domestic/{place_id}"
+    if check_in and check_out:
+        url += f"?checkInDate={check_in}&checkOutDate={check_out}"
     resp = requests.get(url, headers=HEADERS, timeout=20)
     resp.raise_for_status()
     html = resp.text
