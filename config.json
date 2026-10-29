@@ -1,4 +1,6 @@
 {
+  "keywords": ["특가", "할인", "쿠폰", "최저가"],
+  "priceDropPercent": 5,
   "places": [
     {
       "name": "휘닉스 리조트 평창",

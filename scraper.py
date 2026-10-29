@@ -11,6 +11,9 @@ STATE_PATH = Path(__file__).parent / "state.json"
 
 SITE_LABELS = {"yeogi": "여기어때", "yanolja": "야놀자"}
 
+# State key holding the last seen price per place/site/window.
+PRICES_KEY = "__prices__"
+
 # Stored in state for dated windows so "became bookable" is diffed like a badge.
 OPEN = "__open__"
 
@@ -21,13 +24,21 @@ def load_json(path: Path, default):
     return default
 
 
-def check_place(place: dict, state: dict) -> list[str]:
+def check_place(
+    place: dict,
+    state: dict,
+    keywords: list[str] | None = None,
+    drop_percent: float = 5,
+) -> list[str]:
     """Returns a list of alert messages for this place.
 
     Always checks tonight's stay; each entry in place["dates"] adds a window
-    that also alerts when its dates become bookable.
+    that also alerts when its dates become bookable. Badges are alerted only
+    when they contain one of `keywords` (all badges if None), and a price drop
+    of at least `drop_percent` vs. the last seen price is alerted too.
     """
     messages = []
+    prices = state.setdefault(PRICES_KEY, {})
     windows = [{}] + place.get("dates", [])
 
     for window in windows:
@@ -60,6 +71,8 @@ def check_place(place: dict, state: dict) -> list[str]:
             if not found:
                 continue
 
+            if keywords is not None:
+                badges = [b for b in badges if any(k in b for k in keywords)]
             if window_label:
                 # Promo text on dates that can't be booked isn't actionable.
                 badges = list(badges) + [OPEN] if price else []
@@ -68,7 +81,16 @@ def check_place(place: dict, state: dict) -> list[str]:
             previous = set(state.get(state_key, []))
             new_items = [b for b in matched if b not in previous]
 
-            if new_items:
+            prev_price = prices.get(state_key)
+            dropped = None
+            if price and prev_price and price < prev_price:
+                pct = (prev_price - price) / prev_price * 100
+                if pct >= drop_percent:
+                    dropped = (prev_price, pct)
+            if price:
+                prices[state_key] = price
+
+            if new_items or dropped:
                 title = f"[{label}] {place['name']}"
                 if window_label:
                     title += f" · {window_label} ({check_in}~{check_out})"
@@ -78,7 +100,12 @@ def check_place(place: dict, state: dict) -> list[str]:
                 new_badges = [b for b in new_items if b != OPEN]
                 if new_badges:
                     lines.append(f"배지: {', '.join(new_badges)}")
-                lines.append(f"가격: {price:,}원~" if price else "가격 정보 없음")
+                if dropped:
+                    lines.append(
+                        f"가격: {price:,}원 (이전 {dropped[0]:,}원, -{dropped[1]:.0f}%)"
+                    )
+                else:
+                    lines.append(f"가격: {price:,}원~" if price else "가격 정보 없음")
                 messages.append("\n".join(lines))
 
             state[state_key] = matched
@@ -92,7 +119,14 @@ def main():
 
     all_messages = []
     for place in config["places"]:
-        all_messages.extend(check_place(place, state))
+        all_messages.extend(
+            check_place(
+                place,
+                state,
+                config.get("keywords"),
+                config.get("priceDropPercent", 5),
+            )
+        )
 
     STATE_PATH.write_text(
         json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8"
