@@ -6,6 +6,7 @@
       "name": "휘닉스 리조트 평창",
       "yeogi": { "id": 61569, "dong_code": "5176000000" },
       "yanolja": { "id": 3001676 },
+      "checkTonight": false,
       "dates": [
         { "label": "설연휴", "checkIn": "2027-02-06", "checkOut": "2027-02-07" },
         { "label": "2월27일", "checkIn": "2027-02-27", "checkOut": "2027-02-28" },
@@ -14,6 +15,7 @@
     },
     {
       "name": "더위크앤리조트",
+      "enabled": false,
       "yeogi": { "id": 66197, "dong_code": "2815500000" },
       "yanolja": { "id": 1000110806 }
     }

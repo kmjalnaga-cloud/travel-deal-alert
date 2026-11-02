@@ -32,14 +32,18 @@ def check_place(
 ) -> list[str]:
     """Returns a list of alert messages for this place.
 
-    Always checks tonight's stay; each entry in place["dates"] adds a window
-    that also alerts when its dates become bookable. Badges are alerted only
-    when they contain one of `keywords` (all badges if None), and a price drop
-    of at least `drop_percent` vs. the last seen price is alerted too.
+    Checks tonight's stay unless place["checkTonight"] is false; each entry in
+    place["dates"] adds a window that also alerts when its dates become
+    bookable. A place with "enabled": false is skipped entirely. Badges are
+    alerted only when they contain one of `keywords` (all badges if None), and
+    a price drop of at least `drop_percent` vs. the last seen price is alerted
+    too.
     """
     messages = []
+    if not place.get("enabled", True):
+        return messages
     prices = state.setdefault(PRICES_KEY, {})
-    windows = [{}] + place.get("dates", [])
+    windows = ([{}] if place.get("checkTonight", True) else []) + place.get("dates", [])
 
     for window in windows:
         window_label = window.get("label")

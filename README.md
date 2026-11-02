@@ -38,6 +38,11 @@ gh secret set TELEGRAM_CHAT_ID
 - 여기어때: 검색 결과에서 숙소를 클릭하면 `/domestic-accommodations/{id}` 형태의 링크가 뜬다. `dong_code`는 지역 코드로, 검색 자동완성 API 응답의 `sigunguCode` 값을 사용한다.
 - 야놀자: 숙소 상세 페이지 URL이 `https://nol.yanolja.com/stay/domestic/{id}` 형태다.
 
+## 숙소별 켜고 끄기
+
+- `"enabled": false`: 그 숙소를 통째로 건너뛴다. 설정은 그대로 남아 있어서 `true`로 바꾸거나 줄을 지우면 다시 감시한다.
+- `"checkTonight": false`: 오늘 1박 점검을 끄고, `dates`에 적은 날짜만 감시한다.
+
 ## 특정 날짜 감시
 
 숙소에 `dates`를 추가하면 오늘 1박 점검과 별개로 해당 날짜도 함께 확인한다.
