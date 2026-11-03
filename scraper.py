@@ -29,8 +29,11 @@ def check_place(
     state: dict,
     keywords: list[str] | None = None,
     drop_percent: float = 5,
-) -> list[str]:
-    """Returns a list of alert messages for this place.
+) -> list[tuple[str, str]]:
+    """Returns (check-in date, alert message) pairs for this place.
+
+    Tonight's stay has an empty date so it sorts first; main() orders all
+    messages by this date.
 
     Checks tonight's stay unless place["checkTonight"] is false; each entry in
     place["dates"] adds a window that also alerts when its dates become
@@ -110,7 +113,7 @@ def check_place(
                     )
                 else:
                     lines.append(f"가격: {price:,}원~" if price else "가격 정보 없음")
-                messages.append("\n".join(lines))
+                messages.append((check_in or "", "\n".join(lines)))
 
             state[state_key] = matched
 
@@ -137,7 +140,9 @@ def main():
     )
 
     if all_messages:
-        text = "🏨 특가 알림\n\n" + "\n\n".join(all_messages)
+        # Stable sort: same date keeps place order, then 여기어때 before 야놀자.
+        all_messages.sort(key=lambda m: m[0])
+        text = "🏨 특가 알림\n\n" + "\n\n".join(m[1] for m in all_messages)
         if os.environ.get("TELEGRAM_BOT_TOKEN") and os.environ.get("TELEGRAM_CHAT_ID"):
             send_telegram(text)
         else:
