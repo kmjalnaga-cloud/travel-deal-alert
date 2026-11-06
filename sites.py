@@ -1,3 +1,4 @@
+import html as htmllib
 import json
 import re
 from datetime import datetime, timedelta, timezone
@@ -99,3 +100,60 @@ def fetch_yanolja(name: str, place_id: int, check_in=None, check_out=None):
                     badges.append(label_m.group(1))
 
     return True, (min(prices) if prices else None), badges
+
+
+def fetch_campnic(url: str, group_key: int, check_in: str, check_out: str, prefixes):
+    """Rooms of a nowgo-based camp reservation page for one stay.
+
+    Returns a list of dicts: name, available, price (what you pay, after any
+    시설할인), discount (0 if none). Only rooms whose name starts with one of
+    `prefixes` are kept. Raises if the page has no matching rooms, so a layout
+    change or error page isn't mistaken for "everything is sold out".
+    """
+    resp = requests.get(
+        url,
+        params={"group_key": group_key, "s_dt": check_in, "e_dt": check_out, "sel": ""},
+        headers=HEADERS,
+        timeout=30,
+    )
+    resp.raise_for_status()
+    text = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", resp.text, flags=re.S)
+    lines = [
+        re.sub(r"\s+", " ", ln).strip()
+        for ln in htmllib.unescape(re.sub(r"<[^>]+>", "\n", text)).split("\n")
+    ]
+    lines = [ln for ln in lines if ln]
+
+    starts = [i for i, ln in enumerate(lines) if "기준" in ln and "최대" in ln]
+    rooms = []
+    for n, i in enumerate(starts):
+        name = lines[i - 1]
+        if not name.startswith(tuple(prefixes)):
+            continue
+        end = starts[n + 1] - 1 if n + 1 < len(starts) else len(lines)
+        block = lines[i:end]
+        if "가격" not in block:
+            continue
+        seg = block[block.index("가격") + 1:][:8]
+        status = next((x for x in seg if x in ("선택", "예약완료")), None)
+        if status is None:
+            continue
+        nums = [
+            int(x.replace(",", "").replace("원", ""))
+            for x in seg[:seg.index(status)]
+            if re.fullmatch(r"[\d,]+원?", x)
+        ]
+        if not nums:
+            continue
+        discount = nums[0] if "시설할인" in seg[:seg.index(status)] and len(nums) >= 3 else 0
+        rooms.append(
+            {
+                "name": name,
+                "available": status == "선택",
+                "price": nums[-1],
+                "discount": discount,
+            }
+        )
+    if not rooms:
+        raise RuntimeError("no matching camp rooms found on the page")
+    return rooms

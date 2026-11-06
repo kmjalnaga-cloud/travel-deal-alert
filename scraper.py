@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 from notify import send_telegram
-from sites import fetch_yeogi, fetch_yanolja
+from sites import fetch_campnic, fetch_yeogi, fetch_yanolja
 
 CONFIG_PATH = Path(__file__).parent / "config.json"
 STATE_PATH = Path(__file__).parent / "state.json"
@@ -16,6 +16,96 @@ PRICES_KEY = "__prices__"
 
 # Stored in state for dated windows so "became bookable" is diffed like a badge.
 OPEN = "__open__"
+
+# State key holding per-room status for camp reservation pages.
+CAMP_KEY = "__camp__"
+
+
+def check_campnic(place: dict, state: dict, drop_percent: float) -> list[tuple[str, str]]:
+    """Per-room watch of a camp reservation page for each date in place["dates"].
+
+    Alerts, one message per date: rooms that just became bookable, price drops
+    on rooms that stay bookable, and 시설할인 that newly appears.
+    """
+    cfg = place["campnic"]
+    store_all = state.setdefault(CAMP_KEY, {})
+    messages = []
+
+    for window in place.get("dates", []):
+        check_in, check_out = window["checkIn"], window["checkOut"]
+        try:
+            rooms = fetch_campnic(
+                cfg["url"], cfg.get("groupKey", 2), check_in, check_out, cfg["rooms"]
+            )
+        except Exception as exc:  # noqa: BLE001
+            print(f"[warn] {place['name']} {window['label']} 조회 실패: {exc}", file=sys.stderr)
+            continue
+
+        store = store_all.setdefault(f"{place['name']}|{window['label']}", {})
+        opened, dropped, discounted = [], [], []
+
+        for room in rooms:
+            prev = store.get(room["name"])
+            was_open = bool(prev and prev["open"])
+
+            if room["available"]:
+                if not was_open:
+                    opened.append(room)
+                else:
+                    if room["price"] < prev["price"]:
+                        pct = (prev["price"] - room["price"]) / prev["price"] * 100
+                        if pct >= drop_percent:
+                            dropped.append((room, prev["price"], pct))
+                    if room["discount"] and not prev.get("discount"):
+                        discounted.append(room)
+
+            store[room["name"]] = {
+                "open": room["available"],
+                # Keep the last bookable price while sold out, to compare on reopen.
+                "price": room["price"] if room["available"] else (prev or room)["price"],
+                "discount": room["discount"] if room["available"] else 0,
+            }
+
+        if not (opened or dropped or discounted):
+            continue
+
+        lines = [f"[판타스틱 캠프닉] {window['label']} ({check_in}~{check_out})"]
+        if opened:
+            lines.append("예약 가능해졌어요: " + _camp_rooms_text(opened))
+        for room, old, pct in dropped:
+            lines.append(
+                f"가격 하락: {_camp_short(room['name'])} {old:,}원 → {room['price']:,}원 (-{pct:.0f}%)"
+            )
+        if discounted:
+            lines.append(
+                "시설할인: "
+                + ", ".join(f"{_camp_short(r['name'])} {r['discount']:,}원" for r in discounted)
+            )
+        messages.append((check_in, "\n".join(lines)))
+
+    return messages
+
+
+def _camp_short(name: str) -> str:
+    """'카라반 02 (8.5평)' -> '카라반 02'; '글램핑01' -> '글램핑01'."""
+    return name.split("(")[0].strip()
+
+
+def _camp_rooms_text(rooms: list[dict]) -> str:
+    """Group same-price rooms: '글램핑 01·02 150,000원, 카라반 02 190,000원(시설할인 10,000원)'."""
+    groups: dict[tuple, list[str]] = {}
+    for r in rooms:
+        short = _camp_short(r["name"])
+        family = short.rstrip("0123456789 ").strip() or short
+        number = short[len(family):].strip()
+        groups.setdefault((family, r["price"], r["discount"]), []).append(number or short)
+    parts = []
+    for (family, price, discount), numbers in groups.items():
+        text = f"{family} {'·'.join(numbers)} {price:,}원"
+        if discount:
+            text += f"(시설할인 {discount:,}원)"
+        parts.append(text)
+    return ", ".join(parts)
 
 
 def load_json(path: Path, default):
@@ -45,6 +135,8 @@ def check_place(
     messages = []
     if not place.get("enabled", True):
         return messages
+    if "campnic" in place:
+        return check_campnic(place, state, drop_percent)
     prices = state.setdefault(PRICES_KEY, {})
     windows = ([{}] if place.get("checkTonight", True) else []) + place.get("dates", [])
 

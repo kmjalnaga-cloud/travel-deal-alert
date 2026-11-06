@@ -3,6 +3,19 @@
   "priceDropPercent": 5,
   "places": [
     {
+      "name": "판타스틱 캠프닉",
+      "campnic": {
+        "url": "https://www.fantasticcampnic.kr/reservation/1b869321a3334de4a7f641ee0f04088e",
+        "groupKey": 2,
+        "rooms": ["글램핑", "카라반"]
+      },
+      "dates": [
+        { "label": "11월14일", "checkIn": "2026-11-14", "checkOut": "2026-11-15" },
+        { "label": "11월21일", "checkIn": "2026-11-21", "checkOut": "2026-11-22" },
+        { "label": "11월28일", "checkIn": "2026-11-28", "checkOut": "2026-11-29" }
+      ]
+    },
+    {
       "name": "휘닉스 리조트 평창",
       "yeogi": { "id": 61569, "dong_code": "5176000000" },
       "yanolja": { "id": 3001676 },
