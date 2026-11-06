@@ -13,6 +13,14 @@
         { "label": "12월25일", "checkIn": "2026-12-25", "checkOut": "2026-12-26" }
       ]
     },
+    { "name": "휘닉스 호텔 평창", "yeogi": { "id": 46839, "dong_code": "5176000000" }, "checkTonight": false, "dates": [{ "label": "12월25일", "checkIn": "2026-12-25", "checkOut": "2026-12-26" }] },
+    { "name": "평창 더화이트뷰펜션", "yeogi": { "id": 63040, "dong_code": "5176000000" }, "checkTonight": false, "dates": [{ "label": "12월25일", "checkIn": "2026-12-25", "checkOut": "2026-12-26" }] },
+    { "name": "평창 화이트캐빈펜션", "yeogi": { "id": 71013, "dong_code": "5176000000" }, "checkTonight": false, "dates": [{ "label": "12월25일", "checkIn": "2026-12-25", "checkOut": "2026-12-26" }] },
+    { "name": "평창 휘닉스그린텔", "yeogi": { "id": 69491, "dong_code": "5176000000" }, "checkTonight": false, "dates": [{ "label": "12월25일", "checkIn": "2026-12-25", "checkOut": "2026-12-26" }] },
+    { "name": "한화리조트 평창", "yeogi": { "id": 6728, "dong_code": "5176000000" }, "checkTonight": false, "dates": [{ "label": "12월25일", "checkIn": "2026-12-25", "checkOut": "2026-12-26" }] },
+    { "name": "위드랜드 호텔 평창", "yeogi": { "id": 81896, "dong_code": "5176000000" }, "checkTonight": false, "dates": [{ "label": "12월25일", "checkIn": "2026-12-25", "checkOut": "2026-12-26" }] },
+    { "name": "평창 이스턴파크", "yeogi": { "id": 87495, "dong_code": "5176000000" }, "checkTonight": false, "dates": [{ "label": "12월25일", "checkIn": "2026-12-25", "checkOut": "2026-12-26" }] },
+    { "name": "평창 로지하우스", "yeogi": { "id": 88203, "dong_code": "5176000000" }, "checkTonight": false, "dates": [{ "label": "12월25일", "checkIn": "2026-12-25", "checkOut": "2026-12-26" }] },
     {
       "name": "더위크앤리조트",
       "enabled": false,
