@@ -72,7 +72,7 @@
   "__camp__": {
     "판타스틱 캠프닉|11월14일": {
       "카라반 01 (8.5평)": {
-        "open": true,
+        "open": false,
         "price": 200000,
         "discount": 0
       },
@@ -107,7 +107,7 @@
         "discount": 0
       },
       "글램핑04": {
-        "open": true,
+        "open": false,
         "price": 150000,
         "discount": 0
       },
