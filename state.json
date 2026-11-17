@@ -91,7 +91,7 @@
         "discount": 10000
       },
       "카라반 04 (11.5평)": {
-        "open": true,
+        "open": false,
         "price": 200000,
         "discount": 0
       },
@@ -210,7 +210,7 @@
         "discount": 0
       },
       "글램핑05": {
-        "open": false,
+        "open": true,
         "price": 150000,
         "discount": 0
       }
