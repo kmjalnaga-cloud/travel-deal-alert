@@ -143,18 +143,18 @@
         "discount": 0
       },
       "글램핑01": {
-        "open": false,
-        "price": 150000,
+        "open": true,
+        "price": 120000,
         "discount": 0
       },
       "글램핑02": {
-        "open": false,
-        "price": 150000,
+        "open": true,
+        "price": 120000,
         "discount": 0
       },
       "글램핑03": {
-        "open": false,
-        "price": 150000,
+        "open": true,
+        "price": 120000,
         "discount": 0
       },
       "글램핑04": {
@@ -163,8 +163,8 @@
         "discount": 0
       },
       "글램핑05": {
-        "open": false,
-        "price": 150000,
+        "open": true,
+        "price": 120000,
         "discount": 0
       }
     },
