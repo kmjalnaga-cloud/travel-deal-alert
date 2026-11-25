@@ -127,9 +127,9 @@
         "discount": 0
       },
       "카라반 02 (8.5평)": {
-        "open": true,
+        "open": false,
         "price": 160000,
-        "discount": 10000
+        "discount": 0
       },
       "카라반 03 (11.5평)": {
         "open": true,
