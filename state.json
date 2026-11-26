@@ -122,7 +122,7 @@
     },
     "판타스틱 캠프닉|11월21일": {
       "카라반 01 (8.5평)": {
-        "open": true,
+        "open": false,
         "price": 170000,
         "discount": 0
       },
@@ -133,11 +133,11 @@
       },
       "카라반 03 (11.5평)": {
         "open": true,
-        "price": 190000,
+        "price": 220000,
         "discount": 10000
       },
       "카라반 04 (11.5평)": {
-        "open": true,
+        "open": false,
         "price": 200000,
         "discount": 0
       },
@@ -147,22 +147,22 @@
         "discount": 0
       },
       "글램핑02": {
-        "open": true,
+        "open": false,
         "price": 120000,
         "discount": 0
       },
       "글램핑03": {
         "open": true,
-        "price": 120000,
+        "price": 150000,
         "discount": 0
       },
       "글램핑04": {
-        "open": true,
+        "open": false,
         "price": 120000,
         "discount": 0
       },
       "글램핑05": {
-        "open": true,
+        "open": false,
         "price": 120000,
         "discount": 0
       }
