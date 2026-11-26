@@ -142,7 +142,7 @@
         "discount": 0
       },
       "글램핑01": {
-        "open": true,
+        "open": false,
         "price": 120000,
         "discount": 0
       },
